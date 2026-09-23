@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.local
+.env.production
+*.log
+.DS_Store
+coverage/
+dist/
+build/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
+performance/reports/*.json
+performance/reports/*.html

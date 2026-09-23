@@ -1,0 +1,277 @@
+{
+  "info": {
+    "name": "SharePlate Donations API",
+    "description": "Postman documentation collection for Donations CRUD endpoints in SharePlate backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "2d2c9988-2fdd-4fdf-b9a4-4f7c9f3e31ab"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "donationId",
+      "value": "69a1b159e9592869b2ce2ae4",
+      "type": "string"
+    },
+    {
+      "key": "donorId",
+      "value": "65f0a1b2c3d4e5f678901234",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get All Donations",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/donations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "donations"
+          ]
+        },
+        "description": "Fetch all donations."
+      },
+      "response": [
+        {
+          "name": "200 OK - Donations List",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/donations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donations"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"donations\": [\n    {\n      \"_id\": \"69a1ad70d11db241d72f8f21\",\n      \"donor\": \"65f0a1b2c3d4e5f678901234\",\n      \"foodName\": \"Rice Packets\",\n      \"quantity\": 25,\n      \"expiryDate\": \"2026-03-05T18:00:00.000Z\",\n      \"status\": \"available\",\n      \"createdAt\": \"2026-02-27T14:42:56.232Z\",\n      \"updatedAt\": \"2026-02-27T14:42:56.232Z\",\n      \"__v\": 0\n    },\n    {\n      \"_id\": \"69a1ad9bd11db241d72f8f23\",\n      \"donor\": \"65f0a1b2c3d4e5f678901234\",\n      \"foodName\": \"Fish buns\",\n      \"quantity\": 12,\n      \"expiryDate\": \"2026-03-03T18:00:00.000Z\",\n      \"status\": \"available\",\n      \"createdAt\": \"2026-02-27T14:43:39.222Z\",\n      \"updatedAt\": \"2026-02-27T14:46:01.243Z\",\n      \"__v\": 0\n    },\n    {\n      \"_id\": \"69a1addbd11db241d72f8f26\",\n      \"donor\": \"65f0a1b2c3d4e5f678901234\",\n      \"foodName\": \"Fresh Sandwiches\",\n      \"quantity\": 50,\n      \"expiryDate\": \"2026-03-03T18:00:00.000Z\",\n      \"status\": \"available\",\n      \"createdAt\": \"2026-02-27T14:44:43.067Z\",\n      \"updatedAt\": \"2026-02-27T14:47:28.495Z\",\n      \"__v\": 0\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Donation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"donor\": \"{{donorId}}\",\n  \"foodName\": \"Fresh Sandwiches\",\n  \"quantity\": 55250,\n  \"expiryDate\": \"2026-03-31T18:00:00.000Z\",\n  \"status\": \"available\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/donations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "donations"
+          ]
+        },
+        "description": "Create a new donation record."
+      },
+      "response": [
+        {
+          "name": "201 Created - Donation Created",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donor\": \"{{donorId}}\",\n  \"foodName\": \"Fresh Sandwiches\",\n  \"quantity\": 55250,\n  \"expiryDate\": \"2026-03-31T18:00:00.000Z\",\n  \"status\": \"available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/donations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donations"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Donation created successfully\",\n  \"data\": {\n    \"donor\": \"65f0a1b2c3d4e5f678901234\",\n    \"foodName\": \"Fresh Sandwiches\",\n    \"quantity\": 55250,\n    \"expiryDate\": \"2026-03-31T18:00:00.000Z\",\n    \"status\": \"available\",\n    \"_id\": \"69a1b159e9592869b2ce2ae4\",\n    \"createdAt\": \"2026-02-27T14:59:37.908Z\",\n    \"updatedAt\": \"2026-02-27T14:59:37.908Z\",\n    \"__v\": 0\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Donation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"donor\": \"{{donorId}}\",\n  \"foodName\": \"Fresh Sandwiches125\",\n  \"quantity\": 552,\n  \"expiryDate\": \"2026-03-31T18:00:00.000Z\",\n  \"status\": \"available\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/donations/{{donationId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "donations",
+            "{{donationId}}"
+          ]
+        },
+        "description": "Update an existing donation by ID."
+      },
+      "response": [
+        {
+          "name": "200 OK - Donation Updated",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donor\": \"{{donorId}}\",\n  \"foodName\": \"Fresh Sandwiches125\",\n  \"quantity\": 552,\n  \"expiryDate\": \"2026-03-31T18:00:00.000Z\",\n  \"status\": \"available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/donations/{{donationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donations",
+                "{{donationId}}"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Donation updated successfully\",\n  \"data\": {\n    \"_id\": \"69a1b159e9592869b2ce2ae4\",\n    \"donor\": \"65f0a1b2c3d4e5f678901234\",\n    \"foodName\": \"Fresh Sandwiches125\",\n    \"quantity\": 552,\n    \"expiryDate\": \"2026-03-31T18:00:00.000Z\",\n    \"status\": \"available\",\n    \"createdAt\": \"2026-02-27T14:59:37.908Z\",\n    \"updatedAt\": \"2026-02-27T15:01:04.036Z\",\n    \"__v\": 0\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Donation",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/donations/{{donationId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "donations",
+            "{{donationId}}"
+          ]
+        },
+        "description": "Delete a donation by ID."
+      },
+      "response": [
+        {
+          "name": "200 OK - Donation Deleted",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/donations/{{donationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "donations",
+                "{{donationId}}"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Donation deleted successfully\"\n}"
+        }
+      ]
+    }
+  ]
+}

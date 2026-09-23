@@ -1,0 +1,124 @@
+config:
+  target: "http://localhost:5000/api"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 15
+      name: "Ramping up"
+    - duration: 60
+      arrivalRate: 50
+      name: "Peak load"
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool down"
+  processor: "./performance-processor.js"
+  variables:
+    baseUrl: "http://localhost:5000/api"
+
+scenarios:
+  - name: "Browse Available Donations"
+    flow:
+      - get:
+          url: "/donations/available"
+
+  - name: "Get Single Donation"
+    flow:
+      - get:
+          url: "/donations/{{ donationId }}"
+
+  - name: "Authentication Flow"
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "donor@example.com"
+            password: "TestPassword123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+
+  - name: "Create Donation (Authenticated)"
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "donor@example.com"
+            password: "TestPassword123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - post:
+          url: "/donations"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            foodName: "Performance Test Food"
+            quantity: "{{ randomNumber(5, 20) }}"
+            expiryDate: "2026-12-31"
+            location: "Test Location"
+
+  - name: "Create Request (Authenticated)"
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "shelter@example.com"
+            password: "TestPassword123"
+          capture:
+            - json: "$.token"
+              as: "shelterToken"
+      - post:
+          url: "/requests"
+          headers:
+            Authorization: "Bearer {{ shelterToken }}"
+          json:
+            donation: "{{ donationId }}"
+            quantityRequested: "{{ randomNumber(1, 5) }}"
+            notes: "Performance test request"
+
+  - name: "Get Donor Donations"
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "donor@example.com"
+            password: "TestPassword123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/donations/my-donations"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+
+  - name: "Get Shelter Requests"
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "shelter@example.com"
+            password: "TestPassword123"
+          capture:
+            - json: "$.token"
+              as: "shelterToken"
+      - get:
+          url: "/requests/my-requests"
+          headers:
+            Authorization: "Bearer {{ shelterToken }}"
+
+  - name: "Approve Request"
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "donor@example.com"
+            password: "TestPassword123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - put:
+          url: "/requests/{{ requestId }}/approve"
+          headers:
+            Authorization: "Bearer {{ authToken }}"

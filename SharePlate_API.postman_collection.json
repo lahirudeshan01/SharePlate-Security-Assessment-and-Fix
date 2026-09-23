@@ -1,0 +1,857 @@
+{
+	"info": {
+		"_postman_id": "shareplate-api-2026",
+		"name": "SharePlate API - Food Donation Platform",
+		"description": "Complete API documentation for SharePlate Request Matching & Approval System\n\n## Setup Instructions:\n1. Import this collection into Postman\n2. Create an environment with variable: `baseUrl` = `http://localhost:5000`\n3. Register/Login to get JWT token (automatically saved)\n4. Token will be auto-applied to all authenticated requests\n\n## Features:\n- ✅ Authentication (Register, Login, Profile)\n- ✅ Donation Management (CRUD)\n- ✅ Request Matching (Full CRUD + Approval Workflow)\n- ✅ Auto-rejection mechanism\n- ✅ Role-based access control\n\n**Developed by:** Pinithi\n**Date:** February 26, 2026\n**Evaluation:** Component 1 - Request Matching & Approval",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-save token from login/register responses",
+					"if (pm.response.code === 200 || pm.response.code === 201) {",
+					"    const jsonData = pm.response.json();",
+					"    if (jsonData.token) {",
+					"        pm.environment.set('authToken', jsonData.token);",
+					"        console.log('✅ Token saved automatically');",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has token', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Shelter\",\n  \"email\": \"shelter@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"shelter\",\n  \"organizationName\": \"Hope Shelter\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user (donor or shelter)\n\n**Roles:** \n- `donor` - Can create donations and approve/reject requests\n- `shelter` - Can create requests for donations\n\n**Required Fields:**\n- name\n- email\n- password (min 6 characters)\n- role (donor or shelter)\n\n**Optional:** organizationName (for shelters)"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Donor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Donor\",\n  \"email\": \"donor@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"donor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a donor user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has token', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"shelter@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with email and password. Returns JWT token (automatically saved)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has user data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('_id');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData).to.have.property('role');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current logged-in user profile info.\n\n**Requires:** JWT token (Authorization header)"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and profile management."
+		},
+		{
+			"name": "Donations",
+			"item": [
+				{
+					"name": "Create Donation (Donor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has donation data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('_id');",
+									"    pm.expect(jsonData.status).to.equal('available');",
+									"    // Save donation ID for later use",
+									"    pm.environment.set('donationId', jsonData._id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"foodName\": \"Fresh Sandwiches\",\n  \"quantity\": 50,\n  \"expiryDate\": \"2026-03-01\",\n  \"location\": {\n    \"address\": \"123 Main Street, Colombo\",\n    \"lat\": 6.9271,\n    \"lng\": 79.8612\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/donations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"donations"
+							]
+						},
+						"description": "Create a new food donation (Donor only)\n\n**Required Fields:**\n- foodName\n- quantity (positive number)\n- expiryDate (ISO 8601 format)\n\n**Optional:** location (address, lat, lng)\n\n**Initial Status:** available"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Donations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/donations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"donations"
+							]
+						},
+						"description": "Get all donations in the system.\n\n**Requires:** Authentication"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Available Donations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All donations are available', function () {",
+									"    const jsonData = pm.response.json();",
+									"    jsonData.forEach(donation => {",
+									"        pm.expect(donation.status).to.equal('available');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/donations/available",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"donations",
+								"available"
+							]
+						},
+						"description": "Get all donations with status 'available'.\n\n**Public endpoint** - No authentication required"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Donations (Donor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/donations/my-donations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"donations",
+								"my-donations"
+							]
+						},
+						"description": "Get all donations created by the logged-in donor.\n\n**Role Required:** Donor"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Donation by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has donation details', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('_id');",
+									"    pm.expect(jsonData).to.have.property('foodName');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/donations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"donations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{donationId}}",
+									"description": "Donation ID"
+								}
+							]
+						},
+						"description": "Get a single donation by its ID.\n\n**Public endpoint** - No authentication required"
+					},
+					"response": []
+				}
+			],
+			"description": "Donation management endpoints for creating and viewing food donations."
+		},
+		{
+			"name": "Requests - CRUD Operations",
+			"item": [
+				{
+					"name": "Create Request (Shelter)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has request data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('_id');",
+									"    pm.expect(jsonData.status).to.equal('pending');",
+									"    // Save request ID for later use",
+									"    pm.environment.set('requestId', jsonData._id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"donationId\": \"{{donationId}}\",\n  \"message\": \"We urgently need food for 50 people at our shelter. We have facilities to pick up immediately.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests"
+							]
+						},
+						"description": "Create a new request for a donation (Shelter only)\n\n**Required:**\n- donationId (MongoDB ObjectId)\n\n**Optional:**\n- message (max 500 characters)\n\n**Features:**\n- ✅ Prevents duplicate requests\n- ✅ Only for 'available' donations\n- ✅ Initial status: pending"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Request (Shelter)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Message is updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('Updated');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"Updated: We now need for 75 people. Can pick up anytime today.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{requestId}}",
+									"description": "Request ID"
+								}
+							]
+						},
+						"description": "Update a pending request's message (Shelter only)\n\n**Authorization:**\n- Shelter role\n- Must be request owner\n\n**Restrictions:**\n- Only pending requests\n- Cannot update approved/rejected requests\n\n**Note:** This is for correcting/updating the request before donor reviews it."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Request (Shelter)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Success message returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('deleted');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{requestId}}",
+									"description": "Request ID to delete"
+								}
+							]
+						},
+						"description": "Delete a pending request (Shelter only)\n\n**Authorization:**\n- Shelter role\n- Must be request owner\n\n**Restrictions:**\n- Only pending requests\n- Cannot delete approved/rejected requests\n\n**Smart Cleanup:**\n- If no more pending requests exist for the donation\n- Donation status automatically returns to 'available'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests"
+							]
+						},
+						"description": "Get all requests in the system.\n\n**Access:** All authenticated users\n\n**Includes:** Populated donation and shelter details"
+					},
+					"response": []
+				}
+			],
+			"description": "**CRUD Operations** for request management:\n- ✅ CREATE: Make new requests\n- ✅ READ: View requests (all, my requests, by donation)\n- ✅ UPDATE: Edit pending requests\n- ✅ DELETE: Cancel pending requests"
+		},
+		{
+			"name": "Requests - Approval Workflow",
+			"item": [
+				{
+					"name": "Approve Request (Donor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Request is approved', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.equal('approved');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/:id/approve",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								":id",
+								"approve"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{requestId}}",
+									"description": "Request ID"
+								}
+							]
+						},
+						"description": "Approve a request (Donor only)\n\n**Role Required:** Donor\n\n**Authorization:**\n- Must own the donation\n\n**Actions:**\n- ✅ Sets request status to 'approved'\n- ✅ Changes donation status to 'reserved'\n- ✅ Auto-rejects all other pending requests\n\n**Error Cases:**\n- Request not found\n- Donation not owned by donor\n- Request already approved/rejected"
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Request (Donor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Request is rejected', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.equal('rejected');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/:id/reject",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								":id",
+								"reject"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{requestId}}",
+									"description": "Request ID"
+								}
+							]
+						},
+						"description": "Reject a request (Donor only)\n\n**Role Required:** Donor\n\n**Authorization:**\n- Must own the donation\n\n**Actions:**\n- ✅ Sets request status to 'rejected'\n- ✅ Keeps donation 'available' if other pending requests exist\n- ✅ Donation remains available for other shelters\n\n**Smart Status Management:**\n- If no pending requests remain → Donation stays 'available'\n- Donation only becomes 'reserved' when a request is approved"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Requests (Shelter)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/my-requests",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								"my-requests"
+							]
+						},
+						"description": "Get all requests created by the logged-in shelter.\n\n**Role Required:** Shelter\n\n**Returns:** All requests (pending, approved, rejected) made by this shelter"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Requests for My Donations (Donor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/my-donations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								"my-donations"
+							]
+						},
+						"description": "Get all requests for the logged-in donor's donations.\n\n**Role Required:** Donor\n\n**Returns:** All requests (from all shelters) for donations owned by this donor\n\n**Use Case:** Donor can review and approve/reject requests for their donations"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Requests by Donation ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('All requests belong to specified donation', function () {",
+									"    const jsonData = pm.response.json();",
+									"    const donationId = pm.environment.get('donationId');",
+									"    jsonData.forEach(request => {",
+									"        pm.expect(request.donation._id).to.equal(donationId);",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/requests/donation/:donationId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								"donation",
+								":donationId"
+							],
+							"variable": [
+								{
+									"key": "donationId",
+									"value": "{{donationId}}",
+									"description": "Donation ID"
+								}
+							]
+						},
+						"description": "Get all requests for a specific donation.\n\n**Access:** All authenticated users\n\n**Returns:** All requests (any status) for the specified donation\n\n**Use Case:** View competition/demand for a specific donation"
+					},
+					"response": []
+				}
+			],
+			"description": "**Approval Workflow** for request processing:\n- ✅ Approve/Reject by donors\n- ✅ Auto-rejection of competing requests\n- ✅ Smart donation status management\n- ✅ View requests by role (shelter/donor)"
+		}
+	]
+}

@@ -1,0 +1,95 @@
+config:
+  target: "http://127.0.0.1:5000"
+  phases:
+    - name: "Default warm-up"
+      duration: 30
+      arrivalRate: 5
+  environments:
+    light:
+      phases:
+        - name: "Light load"
+          duration: 60
+          arrivalRate: 5
+          rampTo: 10
+    medium:
+      phases:
+        - name: "Warm-up"
+          duration: 30
+          arrivalRate: 10
+          rampTo: 20
+        - name: "Sustained medium load"
+          duration: 120
+          arrivalRate: 20
+    heavy:
+      phases:
+        - name: "Warm-up"
+          duration: 30
+          arrivalRate: 20
+          rampTo: 40
+        - name: "High concurrency"
+          duration: 180
+          arrivalRate: 40
+          rampTo: 80
+  processor: "./processor.js"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Health endpoint throughput"
+    weight: 45
+    flow:
+      - get:
+          url: "/api/health"
+
+  - name: "Register and fetch profile"
+    weight: 35
+    flow:
+      - function: "buildUserPayload"
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ userName }}"
+            email: "{{ userEmail }}"
+            password: "{{ userPassword }}"
+            role: "restaurant"
+            phone: "{{ userPhone }}"
+            organizationName: "{{ organizationName }}"
+            address:
+              street: "100 Performance Street"
+              city: "Colombo"
+              state: "Western"
+              zipCode: "10000"
+              country: "Sri Lanka"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/auth/me"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+
+  - name: "Register and login cycle"
+    weight: 20
+    flow:
+      - function: "buildUserPayload"
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ userName }}"
+            email: "{{ userEmail }}"
+            password: "{{ userPassword }}"
+            role: "shelter"
+            phone: "{{ userPhone }}"
+            organizationName: "{{ organizationName }}"
+            address:
+              street: "221 Performance Lane"
+              city: "Galle"
+              state: "Southern"
+              zipCode: "80000"
+              country: "Sri Lanka"
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ userEmail }}"
+            password: "{{ userPassword }}"

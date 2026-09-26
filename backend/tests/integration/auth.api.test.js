@@ -128,6 +128,20 @@ describe('Authentication API - Integration Tests', () => {
       expect(response.body.success).toBe(false);
     });
 
+    it('should reject public registration with the manager role', async () => {
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({
+          ...validDonorData,
+          email: 'manager-signup@test.com',
+          role: 'manager'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(await User.findOne({ email: 'manager-signup@test.com' })).toBeNull();
+    });
+
     it('should return 400 if required fields are missing', async () => {
       const response = await request(app)
         .post('/api/auth/register')
@@ -172,6 +186,37 @@ describe('Authentication API - Integration Tests', () => {
           ...userData,
           confirmPassword: userData.password
         });
+    });
+
+    it('should reject login for a deactivated account', async () => {
+      await User.findOneAndUpdate({ email: userData.email }, { isActive: false });
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: userData.email, password: userData.password });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should reject an existing token after account deactivation', async () => {
+      const loginResponse = await request(app)
+        .post('/api/auth/login')
+        .send({ email: userData.email, password: userData.password });
+
+      const user = await User.findOneAndUpdate(
+        { email: userData.email },
+        { isActive: false },
+        { new: true }
+      );
+
+      const response = await request(app)
+        .get('/api/auth/profile')
+        .set('Authorization', `Bearer ${loginResponse.body.token}`);
+
+      expect(user.isActive).toBe(false);
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe('Account is deactivated');
     });
 
     it('should login successfully with valid credentials', async () => {

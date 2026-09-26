@@ -2,6 +2,10 @@ const Pickup = require("../models/Pickup");
 const Request = require("../models/Request");
 const Donation = require("../models/Donation");
 
+const canManageAllPickups = (user) => ["manager", "admin"].includes(user.role);
+const ownsRequestDonation = (request, userId) =>
+  request?.donation?.donor?.toString() === userId.toString();
+
 // Get all pickups (manager)
 exports.getAllPickups = async (req, res) => {
   try {
@@ -106,7 +110,7 @@ exports.schedulePickup = async (req, res) => {
     const { requestId, scheduledTime, notes } = req.body;
 
     // Check if request exists and is approved
-    const request = await Request.findById(requestId);
+    const request = await Request.findById(requestId).populate("donation");
 
     if (!request) {
       return res.status(404).json({ success: false, message: "Request not found" });
@@ -114,6 +118,10 @@ exports.schedulePickup = async (req, res) => {
 
     if (request.status !== "approved") {
       return res.status(400).json({ success: false, message: "Request is not approved" });
+    }
+
+    if (!canManageAllPickups(req.user) && !ownsRequestDonation(request, req.user._id)) {
+      return res.status(403).json({ success: false, message: "You are not authorized to schedule this pickup" });
     }
 
     // Prevent multiple pickups for same request
@@ -154,6 +162,10 @@ exports.completePickup = async (req, res) => {
       return res.status(404).json({ message: "Pickup not found" });
     }
 
+    if (!canManageAllPickups(req.user) && !ownsRequestDonation(pickup.request, req.user._id)) {
+      return res.status(403).json({ success: false, message: "You are not authorized to complete this pickup" });
+    }
+
     pickup.status = "completed";
     await pickup.save();
 
@@ -176,10 +188,17 @@ exports.completePickup = async (req, res) => {
 // Cancel a pickup and record an issue message on the request
 exports.cancelPickup = async (req, res) => {
   try {
-    const pickup = await Pickup.findById(req.params.id).populate("request");
+    const pickup = await Pickup.findById(req.params.id).populate({
+      path: "request",
+      populate: { path: "donation" }
+    });
 
     if (!pickup) {
       return res.status(404).json({ success: false, message: "Pickup not found" });
+    }
+
+    if (!canManageAllPickups(req.user) && !ownsRequestDonation(pickup.request, req.user._id)) {
+      return res.status(403).json({ success: false, message: "You are not authorized to cancel this pickup" });
     }
 
     if (pickup.status === "completed") {

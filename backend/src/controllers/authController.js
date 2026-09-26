@@ -7,6 +7,13 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, role, organizationName, phone, address, location } = req.body;
 
+    if (!['donor', 'shelter'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Role must be donor or shelter'
+      });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -77,6 +84,13 @@ exports.login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Invalid credentials"
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Account is deactivated"
       });
     }
 

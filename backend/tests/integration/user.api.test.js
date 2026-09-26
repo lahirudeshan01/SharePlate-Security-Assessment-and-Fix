@@ -186,6 +186,22 @@ describe('User API - Integration Tests', () => {
       expect(updated.organizationName).toBe('Updated Restaurant');
     });
 
+    it('should ignore role and account-status fields in profile updates', async () => {
+      if (!mongoConnected) { return; }
+
+      const response = await request(app)
+        .put('/api/users/profile')
+        .set('Authorization', `Bearer ${donorToken}`)
+        .send({ role: 'admin', isActive: false, isVerified: true });
+
+      const updated = await User.findById(donorId);
+
+      expect(response.status).toBe(200);
+      expect(updated.role).toBe('donor');
+      expect(updated.isActive).toBe(true);
+      expect(updated.isVerified).toBe(false);
+    });
+
     it('should return 401 without authentication', async () => {
       if (!mongoConnected) { return; }
 

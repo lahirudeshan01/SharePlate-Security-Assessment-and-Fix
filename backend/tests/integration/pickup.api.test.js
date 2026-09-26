@@ -140,6 +140,28 @@ describe('Pickup API - Integration Tests', () => {
       expect(response.body.success).toBe(true);
     });
 
+    it('should prevent a donor from scheduling another donor\'s request', async () => {
+      if (!mongoConnected) { return; }
+
+      const otherDonor = await User.create({
+        name: 'Other Donor',
+        email: 'other-donor@test.com',
+        password: await bcrypt.hash('password123', 10),
+        role: 'donor'
+      });
+
+      const response = await request(app)
+        .post('/api/pickups/schedule')
+        .set('Authorization', `Bearer ${signToken(otherDonor._id, 'donor')}`)
+        .send({
+          requestId: requestId.toString(),
+          scheduledTime: new Date(Date.now() + 3600000).toISOString()
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+    });
+
     it('should return 401 without authentication', async () => {
       if (!mongoConnected) { return; }
 
@@ -266,6 +288,55 @@ describe('Pickup API - Integration Tests', () => {
         .set('Authorization', `Bearer ${donorToken}`);
 
       expect(response.status).toBe(403);
+    });
+  });
+
+  describe('Donor pickup ownership', () => {
+    let pickupId;
+
+    beforeEach(async () => {
+      if (!mongoConnected) { return; }
+      const pickup = await Pickup.create({
+        request: requestId,
+        scheduledTime: new Date(Date.now() + 3600000),
+        status: 'scheduled'
+      });
+      pickupId = pickup._id;
+    });
+
+    it('should prevent a donor from completing another donor\'s pickup', async () => {
+      if (!mongoConnected) { return; }
+      const otherDonor = await User.create({
+        name: 'Other Donor',
+        email: 'other-complete@test.com',
+        password: await bcrypt.hash('password123', 10),
+        role: 'donor'
+      });
+
+      const response = await request(app)
+        .put(`/api/pickups/${pickupId}/complete`)
+        .set('Authorization', `Bearer ${signToken(otherDonor._id, 'donor')}`);
+
+      expect(response.status).toBe(403);
+      expect((await Pickup.findById(pickupId)).status).toBe('scheduled');
+    });
+
+    it('should prevent a donor from cancelling another donor\'s pickup', async () => {
+      if (!mongoConnected) { return; }
+      const otherDonor = await User.create({
+        name: 'Other Donor',
+        email: 'other-cancel@test.com',
+        password: await bcrypt.hash('password123', 10),
+        role: 'donor'
+      });
+
+      const response = await request(app)
+        .put(`/api/pickups/${pickupId}/cancel`)
+        .set('Authorization', `Bearer ${signToken(otherDonor._id, 'donor')}`)
+        .send({ issueMessage: 'unauthorized cancellation' });
+
+      expect(response.status).toBe(403);
+      expect((await Pickup.findById(pickupId)).status).toBe('scheduled');
     });
   });
 

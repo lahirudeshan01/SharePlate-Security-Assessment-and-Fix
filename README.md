@@ -23,7 +23,7 @@ SharePlate is a full-stack web application that enables food donors (restaurants
 
 ### Prerequisites
 
-- **Node.js** v18+ and **npm** v9+
+- **Node.js** v20.19+ and **npm** v9+
 - **MongoDB** (local instance or MongoDB Atlas cloud cluster)
 - **Git**
 

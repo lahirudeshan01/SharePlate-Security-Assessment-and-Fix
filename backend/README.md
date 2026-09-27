@@ -58,7 +58,7 @@ backend/
 ## Installation
 
 ### Prerequisites
-- Node.js (v16 or higher)
+- Node.js (v20.19 or higher)
 - MongoDB (local or Atlas)
 - npm or yarn
 

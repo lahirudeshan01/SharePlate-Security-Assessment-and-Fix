@@ -15,6 +15,9 @@
     "perf:report": "artillery run performance/artillery.yml --output performance/reports/perf-report.json",
     "perf:report:html": "artillery report performance/reports/perf-report.json --output performance/reports/perf-report.html"
   },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "author": "",
   "license": "ISC",
   "description": "",
@@ -27,7 +30,7 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.2.2",
-    "nodemailer": "^6.9.8",
+    "nodemailer": "^10.0.10",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   },

@@ -731,7 +731,7 @@ Authorization: Bearer <your-jwt-token>
 | Requests    | GET    | `/api/requests/my-approved-requests`| Yes      | shelter                   |
 | Requests    | GET    | `/api/requests/my-donations`        | Yes      | donor, restaurant         |
 | Requests    | GET    | `/api/requests`                     | Yes      | Any authenticated         |
-| Requests    | GET    | `/api/requests/donation/:donationId`| Yes      | Any authenticated         |
+| Requests    | GET    | `/api/requests/donation/:donationId`| Yes      | donor, restaurant (own)   |
 | Pickups     | GET    | `/api/pickups`                      | Yes      | manager, admin            |
 | Pickups     | GET    | `/api/pickups/approved-requests`    | Yes      | manager, admin            |
 | Pickups     | GET    | `/api/pickups/:id`                  | Yes      | manager, admin            |

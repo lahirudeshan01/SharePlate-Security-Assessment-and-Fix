@@ -413,6 +413,12 @@ describe('Request Controller - Unit Tests', () => {
       // Mock the mongoose ObjectId validation
       mongoose.Types.ObjectId.isValid = jest.fn().mockReturnValue(true);
 
+      /////// Broken Object Level Authorization (BOLA / IDOR) //////////
+      Donation.findOne = jest.fn().mockResolvedValue({
+        _id: 'donation123',
+        donor: 'user123'
+      });
+
       const populateMock = jest.fn().mockReturnThis();
       Request.find = jest.fn().mockReturnValue({
         populate: jest.fn(() => ({
@@ -425,11 +431,40 @@ describe('Request Controller - Unit Tests', () => {
 
       // Assert
       expect(mongoose.Types.ObjectId.isValid).toHaveBeenCalledWith('donation123');
+      expect(Donation.findOne).toHaveBeenCalledWith({
+        _id: 'donation123',
+        donor: 'user123'
+      });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         count: 2,
         requests: mockRequests
+      });
+    });
+
+    it('should deny access when the donation belongs to another donor', async () => {
+      // Arrange
+      req.params.donationId = 'donation123';
+      req.user._id = 'differentDonor';
+
+      mongoose.Types.ObjectId.isValid = jest.fn().mockReturnValue(true);
+      Donation.findOne = jest.fn().mockResolvedValue(null);
+      Request.find = jest.fn();
+
+      // Act
+      await requestController.getRequestsByDonation(req, res);
+
+      // Assert
+      expect(Donation.findOne).toHaveBeenCalledWith({
+        _id: 'donation123',
+        donor: 'differentDonor'
+      });
+      expect(Request.find).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Donation not found'
       });
     });
 

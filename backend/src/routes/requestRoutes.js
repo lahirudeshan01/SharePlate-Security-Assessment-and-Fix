@@ -305,7 +305,7 @@ router.get(
  * @swagger
  * /api/requests/donation/{donationId}:
  *   get:
- *     summary: Get all requests for a specific donation
+ *     summary: Get requests for a donation owned by the authenticated donor
  *     tags: [Requests]
  *     security:
  *       - bearerAuth: []
@@ -320,10 +320,14 @@ router.get(
  *         description: Requests for the donation
  *       400:
  *         description: Invalid donation ID
+ *       404:
+ *         description: Donation not found or not owned by the authenticated donor
  */
 router.get(
   "/donation/:donationId",
   authMiddleware,
+  //////////// Broken Object Level Authorization (BOLA / IDOR)/////////
+  authorizeRoles("donor", "restaurant"),
   requestController.getRequestsByDonation
 );
 

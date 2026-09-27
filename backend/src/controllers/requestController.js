@@ -334,6 +334,19 @@ exports.getRequestsByDonation = async (req, res) => {
       });
     }
 
+    /////// Broken Object Level Authorization (BOLA / IDOR)///////
+    const donation = await Donation.findOne({
+      _id: donationId,
+      donor: req.user._id
+    });
+
+    if (!donation) {
+      return res.status(404).json({
+        success: false,
+        message: "Donation not found"
+      });
+    }
+
     const requests = await Request.find({ donation: donationId })
       .populate("shelter", "name email organizationName")
       .populate("donation", "foodName quantity status");

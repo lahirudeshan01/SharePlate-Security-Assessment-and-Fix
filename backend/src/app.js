@@ -2,6 +2,8 @@ console.log("Starting backend server...");
 const express = require("express");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
+//////////// Clickjacking & Content Security Policy (CSP) //////////
+const helmet = require("helmet");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("./config/swagger");
 const { errorHandler } = require("./middleware/errorHandler");
@@ -15,6 +17,26 @@ const pickupRoutes = require("./routes/pickupRoutes");
 const deliveryRoutes = require("./routes/deliveryRoutes");
 
 const app = express();
+
+////////Clickjacking & Content Security Policy (CSP)//////
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+      },
+    },
+    frameguard: { action: "deny" },
+  })
+);
 
 // CORS — restrict to allowed origins in production
 const allowedOrigins = process.env.ALLOWED_ORIGINS

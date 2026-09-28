@@ -60,14 +60,15 @@ exports.register = async (req, res) => {
 // Login user
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
 
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials"
+        message: "Invalid email or password"
       });
     }
 
@@ -76,7 +77,7 @@ exports.login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials"
+        message: "Invalid email or password"
       });
     }
 
@@ -128,8 +129,12 @@ exports.updatePassword = async (req, res) => {
       return res.status(400).json({ success: false, message: "Current password is incorrect" });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: "New password must be at least 6 characters" });
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      });
     }
 
     user.password = await bcrypt.hash(newPassword, 10);

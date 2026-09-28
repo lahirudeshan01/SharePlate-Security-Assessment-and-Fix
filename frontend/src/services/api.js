@@ -4,16 +4,29 @@ const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VIT
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add token to requests
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
+// Add token and Anti-CSRF token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const csrfToken = getCookie('XSRF-TOKEN');
+  if (csrfToken) {
+    config.headers['x-csrf-token'] = csrfToken;
   }
   return config;
 });
@@ -71,6 +84,7 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   signup: (data) => api.post('/auth/register', data),
   getCurrentUser: () => api.get('/auth/profile'),
+  fetchCsrfToken: () => api.get('/csrf-token'),
 };
 
 export default api;

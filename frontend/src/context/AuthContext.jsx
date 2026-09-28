@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
+    authAPI.fetchCsrfToken().catch(() => {});
     if (token) {
       verifyToken();
     } else {
@@ -55,6 +56,18 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  // loginWithToken(authToken) — called from OAuth callback redirect
+  const loginWithToken = async (authToken) => {
+    setToken(authToken);
+    localStorage.setItem('token', authToken);
+    try {
+      const profileRes = await authAPI.getCurrentUser();
+      setUser(profileRes.data.user);
+    } catch {
+      // profile fetch error fallback
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -66,7 +79,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginWithToken, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

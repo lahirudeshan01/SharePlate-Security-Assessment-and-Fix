@@ -64,6 +64,22 @@ const userSchema = new mongoose.Schema({
         lng: Number,
     },
 
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true,
+    },
+
+    avatar: {
+        type: String,
+    },
+
+    authProvider: {
+        type: String,
+        enum: ["local", "google"],
+        default: "local",
+    },
+
 }, {timestamps: true});
 
 module.exports= mongoose.model("User", userSchema);

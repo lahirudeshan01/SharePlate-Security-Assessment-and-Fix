@@ -1,4 +1,10 @@
 const Donation = require("../models/Donation");
+const sanitizeHtml = require("sanitize-html");
+
+const sanitizeOptions = {
+  allowedTags: [], // Enforce plain text only
+  allowedAttributes: {}
+};
 
 //Create a new donation
 exports.createDonation = async (req, res) => {
@@ -7,13 +13,13 @@ exports.createDonation = async (req, res) => {
     const donorId = req.user._id; // Get from authenticated user
 
     const donation = await Donation.create({
-      foodName,
+      foodName: sanitizeHtml(foodName || '', sanitizeOptions),
       quantity,
       donor: donorId,
       expiryDate,
       location,
-      pickupAddress,
-      description,
+      pickupAddress: sanitizeHtml(pickupAddress || '', sanitizeOptions),
+      description: sanitizeHtml(description || '', sanitizeOptions),
       status: "available"
     });
 
@@ -171,12 +177,12 @@ exports.updateDonation = async (req, res) => {
 
     const { foodName, quantity, expiryDate, location, pickupAddress, description } = req.body;
 
-    if (foodName !== undefined) donation.foodName = foodName;
+    if (foodName !== undefined) donation.foodName = sanitizeHtml(foodName || '', sanitizeOptions);
     if (quantity !== undefined) donation.quantity = quantity;
     if (expiryDate !== undefined) donation.expiryDate = expiryDate;
     if (location !== undefined) donation.location = location;
-    if (pickupAddress !== undefined) donation.pickupAddress = pickupAddress;
-    if (description !== undefined) donation.description = description;
+    if (pickupAddress !== undefined) donation.pickupAddress = sanitizeHtml(pickupAddress || '', sanitizeOptions);
+    if (description !== undefined) donation.description = sanitizeHtml(description || '', sanitizeOptions);
 
     await donation.save();
 

@@ -41,14 +41,31 @@ const { validate } = require("../middleware/validate");
  *       400:
  *         description: Validation error or user already exists
  */
+const rateLimit = require("express-rate-limit");
+
+// Dedicated Authentication Rate Limiter (CWE-307)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per 15-minute window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many login/registration attempts from this IP, please try again after 15 minutes."
+  }
+});
+
 router.post(
   "/register",
+  authLimiter,
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("email").isEmail().withMessage("Valid email is required"),
     body("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters"),
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters long")
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+      .withMessage("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)"),
     body("role")
       .isIn(["donor", "shelter", "manager"])
       .withMessage("Role must be donor, shelter, or manager"),
@@ -83,14 +100,74 @@ router.post(
  *       401:
  *         description: Invalid credentials
  */
+const passport = require("../config/passport");
+const jwt = require("jsonwebtoken");
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login and receive a JWT token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@example.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful, returns JWT token
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post(
   "/login",
+  authLimiter,
   [
-    body("email").isEmail().withMessage("Valid email is required"),
-    body("password").notEmpty().withMessage("Password is required"),
+    body("email").isEmail().normalizeEmail().withMessage("A valid email string is required"),
+    body("password").isString().notEmpty().withMessage("Password is required"),
     validate
   ],
   authController.login
+);
+
+/**
+ * @swagger
+ * /api/auth/google:
+ *   get:
+ *     summary: Initiate Google OAuth 2.0 Single Sign-On
+ *     tags: [Authentication]
+ */
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
+
+/**
+ * @swagger
+ * /api/auth/google/callback:
+ *   get:
+ *     summary: Google OAuth 2.0 redirect callback endpoint
+ *     tags: [Authentication]
+ */
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=oauth_failed`, session: false }),
+  (req, res) => {
+    // Issue signed JWT token for the authenticated user
+    const token = jwt.sign(
+      { id: req.user._id, role: req.user.role },
+      process.env.JWT_SECRET || "your_jwt_secret_key",
+      { expiresIn: "7d" }
+    );
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
+  }
 );
 
 /**

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import {
   Box,
@@ -10,16 +10,19 @@ import {
   Alert,
   InputAdornment,
   IconButton,
+  Divider,
 } from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import GoogleIcon from '@mui/icons-material/Google'
 import { useAuth } from '../context/AuthContext'
 import { toast } from 'react-toastify'
 import '../styles/global.css'
 
 export default function LoginPage() {
-  const { user, login } = useAuth()
+  const { user, login, loginWithToken } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [showPassword, setShowPassword] = useState(false)
   const [apiError, setApiError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,7 +33,19 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm()
 
-  // Don't auto-redirect — let the user sign in as a different account if they wish
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const tokenParam = params.get('token')
+    const errorParam = params.get('error')
+    if (tokenParam) {
+      loginWithToken(tokenParam).then(() => {
+        toast.success('Successfully logged in with Google!')
+        navigate('/dashboard')
+      })
+    } else if (errorParam) {
+      setApiError('Google OAuth authentication failed.')
+    }
+  }, [location])
 
   const onSubmit = async (data) => {
     try {
@@ -44,6 +59,13 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleLogin = () => {
+    const backendBase = import.meta.env.VITE_API_URL
+      ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+      : 'http://localhost:5000'
+    window.location.href = `${backendBase}/api/auth/google`
   }
 
   return (
@@ -111,7 +133,19 @@ export default function LoginPage() {
             {loading ? 'Signing in…' : 'Sign In'}
           </Button>
 
-          <Typography textAlign="center" variant="body2">
+          <Divider sx={{ my: 1 }}>OR</Divider>
+
+          <Button
+            variant="outlined"
+            fullWidth
+            startIcon={<GoogleIcon />}
+            onClick={handleGoogleLogin}
+            sx={{ py: 1.2, borderColor: '#003366', color: '#003366' }}
+          >
+            Sign in with Google
+          </Button>
+
+          <Typography textAlign="center" variant="body2" mt={1}>
             Don't have an account?{' '}
             <Link to="/register" style={{ color: '#e65100', fontWeight: 600 }}>
               Register

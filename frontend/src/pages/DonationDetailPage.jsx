@@ -23,6 +23,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { useAuth } from '../context/AuthContext'
 import donationService from '../services/donationService'
 import { toast } from 'react-toastify'
+import DOMPurify from 'dompurify'
 
 const statusColors = {
   available: 'success',
@@ -134,7 +135,7 @@ export default function DonationDetailPage() {
             {donation.description && (
               <Grid size={12}>
                 <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-                <Typography variant="body1">{donation.description}</Typography>
+                <Typography variant="body1">{DOMPurify.sanitize(donation.description)}</Typography>
               </Grid>
             )}
 
@@ -162,7 +163,7 @@ export default function DonationDetailPage() {
                   <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary', mt: 0.3 }} />
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">Pickup Address</Typography>
-                    <Typography variant="body1">{donation.pickupAddress}</Typography>
+                    <Typography variant="body1">{DOMPurify.sanitize(donation.pickupAddress)}</Typography>
                   </Box>
                 </Box>
               </Grid>

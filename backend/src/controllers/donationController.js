@@ -1,4 +1,5 @@
 const Donation = require("../models/Donation");
+const sanitizeHtml = require("sanitize-html");
 
 //Create a new donation
 exports.createDonation = async (req, res) => {
@@ -6,14 +7,20 @@ exports.createDonation = async (req, res) => {
     const { foodName, quantity, expiryDate, location, pickupAddress, description } = req.body;
     const donorId = req.user._id; // Get from authenticated user
 
+    // Sanitize user inputs to prevent Stored XSS attacks
+    const cleanDescription = sanitizeHtml(description || '', {
+      allowedTags: [], // Enforce plain text only
+      allowedAttributes: {}
+    });
+
     const donation = await Donation.create({
-      foodName,
+      foodName: sanitizeHtml(foodName || '', { allowedTags: [], allowedAttributes: {} }),
       quantity,
       donor: donorId,
       expiryDate,
       location,
-      pickupAddress,
-      description,
+      pickupAddress: sanitizeHtml(pickupAddress || '', { allowedTags: [], allowedAttributes: {} }),
+      description: cleanDescription,
       status: "available"
     });
 
@@ -171,12 +178,12 @@ exports.updateDonation = async (req, res) => {
 
     const { foodName, quantity, expiryDate, location, pickupAddress, description } = req.body;
 
-    if (foodName !== undefined) donation.foodName = foodName;
+    if (foodName !== undefined) donation.foodName = sanitizeHtml(foodName || '', { allowedTags: [], allowedAttributes: {} });
     if (quantity !== undefined) donation.quantity = quantity;
     if (expiryDate !== undefined) donation.expiryDate = expiryDate;
     if (location !== undefined) donation.location = location;
-    if (pickupAddress !== undefined) donation.pickupAddress = pickupAddress;
-    if (description !== undefined) donation.description = description;
+    if (pickupAddress !== undefined) donation.pickupAddress = sanitizeHtml(pickupAddress || '', { allowedTags: [], allowedAttributes: {} });
+    if (description !== undefined) donation.description = sanitizeHtml(description || '', { allowedTags: [], allowedAttributes: {} });
 
     await donation.save();
 

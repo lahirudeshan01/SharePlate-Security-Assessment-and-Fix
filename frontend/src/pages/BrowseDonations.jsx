@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { donationAPI } from '../services/api';
 import DonationCard from '../components/DonationCard';
+import DOMPurify from 'dompurify';
 
 const mapUiStatus = (status) => {
   const normalized = (status || 'available').toLowerCase();
@@ -22,7 +23,7 @@ const mapUiStatus = (status) => {
 
 const normalizeDonation = (donation) => ({
   ...donation,
-  foodName: donation?.foodName || 'Unnamed donation',
+  foodName: DOMPurify.sanitize(donation?.foodName || 'Unnamed donation'),
   quantity: Number.isFinite(Number(donation?.quantity)) ? Number(donation.quantity) : 0,
   status: donation?.status || 'available',
   uiStatus: mapUiStatus(donation?.status),

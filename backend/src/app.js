@@ -4,6 +4,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("./config/swagger");
+const xss = require("xss-clean");
 const { errorHandler } = require("./middleware/errorHandler");
 const config = require("./config/config");
 
@@ -34,6 +35,9 @@ app.use(
 );
 
 app.use(express.json());
+
+// Prevent Cross-Site Scripting (XSS) attacks by sanitizing req.body, req.query, and req.params
+app.use(xss());
 
 // Rate limiting — controlled via RATE_LIMIT_ENABLED env var (disable for perf tests)
 if (config.rateLimitEnabled) {

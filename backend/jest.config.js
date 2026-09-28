@@ -10,6 +10,9 @@ module.exports = {
     '**/tests/**/*.test.js'
   ],
   verbose: true,
+  moduleNameMapper: {
+    '^sanitize-html$': '<rootDir>/tests/mocks/sanitizeHtml.js'
+  },
   forceExit: true,
   clearMocks: true,
   resetMocks: true,

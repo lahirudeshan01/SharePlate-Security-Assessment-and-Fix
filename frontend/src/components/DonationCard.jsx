@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import DOMPurify from 'dompurify';
 
 export default function DonationCard({ donation }) {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ export default function DonationCard({ donation }) {
     <div className="bg-[#f8fafc] border border-[#d9dde3] rounded-2xl p-6 shadow-[0_2px_6px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_14px_rgba(15,23,42,0.08)] transition">
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-4xl font-bold leading-tight text-[#0f172a] md:text-[1.95rem]">
-          {donation.foodName || 'Unnamed donation'}
+          {DOMPurify.sanitize(donation.foodName || 'Unnamed donation')}
         </h3>
         <span
           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold capitalize ${
@@ -99,8 +100,8 @@ export default function DonationCard({ donation }) {
         </span>
       </div>
 
-      <p className="text-[#64748b] text-xl md:text-lg mb-4">{donorName}</p>
-      <p className="text-[#1f2937] text-lg md:text-base leading-relaxed mb-5">{description}</p>
+      <p className="text-[#64748b] text-xl md:text-lg mb-4">{DOMPurify.sanitize(donorName)}</p>
+      <p className="text-[#1f2937] text-lg md:text-base leading-relaxed mb-5">{DOMPurify.sanitize(description)}</p>
 
       <div className="space-y-3 mb-6">
         <div className="flex items-center justify-between text-lg md:text-[1rem]">

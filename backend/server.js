@@ -1,7 +1,8 @@
+const path = require("path");
 const dotenv = require("dotenv");
 
-// Load environment variables FIRST (before other imports read process.env)
-dotenv.config();
+// Load environment variables from backend/.env explicitly
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const connectDB = require("./src/config/db");
 const app = require("./src/app");
